@@ -42,6 +42,22 @@ Or if you're already connected to Graph:
 .\Get-SmsVoicePolicyUsers.ps1
 ```
 
+## Running unsigned scripts
+
+If PowerShell blocks the script because it is not digitally signed, allow scripts only for the current terminal session:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+Then run the script:
+
+```powershell
+.\Get-SmsVoicePolicyUsers.ps1
+```
+
+`-Scope Process` applies only to the current PowerShell window and resets automatically when that window is closed.
+
 ## Required permissions
 
 | Scope | Purpose |

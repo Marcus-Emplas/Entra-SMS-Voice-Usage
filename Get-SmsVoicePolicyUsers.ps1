@@ -23,7 +23,6 @@ function Get-PolicyProperty($Object, [string]$Name) {
     }
     return $null
 }
-
 function Get-PolicyScope($Policy) {
     $inc = @(Get-PolicyProperty $Policy 'includeTargets')
     $exc = @(Get-PolicyProperty $Policy 'excludeTargets')
@@ -51,7 +50,6 @@ function Get-PolicyScope($Policy) {
     }
     return [PSCustomObject]$result
 }
-
 # Registration campaign
 $authPolicy = Get-MgPolicyAuthenticationMethodPolicy
 $migrationState = Get-PolicyProperty $authPolicy 'policyMigrationState'
@@ -63,17 +61,13 @@ $campaignState = Get-PolicyProperty $campaign 'state'
 if (-not $campaignState) { $campaignState = 'unknown' }
 $displayCampaign = if ($campaignState -eq 'default') { 'Microsoft managed' } else { $campaignState }
 Write-Host "`nRegistration campaign: $displayCampaign" -ForegroundColor $(if ($campaignState -eq 'default') { 'Yellow' } elseif ($campaignState -eq 'enabled') { 'Green' } else { 'Red' })
-
 # Fetch policies
 $smsPolicy = Get-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration -AuthenticationMethodConfigurationId "sms"
 $voicePolicy = Get-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration -AuthenticationMethodConfigurationId "voice"
-
 Write-Host "`nSMS state: $($smsPolicy.State)" -ForegroundColor $(if ($smsPolicy.State -eq 'enabled') { 'Yellow' } else { 'Green' })
 Write-Host "Voice state: $($voicePolicy.State)" -ForegroundColor $(if ($voicePolicy.State -eq 'enabled') { 'Yellow' } else { 'Green' })
-
 $smsScope = if ($smsPolicy.State -eq "enabled") { Get-PolicyScope $smsPolicy } else { $null }
 $voiceScope = if ($voicePolicy.State -eq "enabled") { Get-PolicyScope $voicePolicy } else { $null }
-
 # Display scope
 function Show-Scope($Name, $Scope) {
     if (-not $Scope) { return }
@@ -84,10 +78,8 @@ function Show-Scope($Name, $Scope) {
     foreach ($g in $Scope.ExcludedGroups) { Write-Host "    Exclude group: $($g.DisplayName) ($($g.Id))" -ForegroundColor Red }
     foreach ($u in $Scope.ExcludedUsers) { Write-Host "    Exclude user: $u" -ForegroundColor Red }
 }
-
 Show-Scope "SMS" $smsScope
 Show-Scope "Voice" $voiceScope
-
 # Export CSV
 $export = @()
 foreach ($p in @(@{N="SMS";S=$smsScope}, @{N="Voice";S=$voiceScope})) {
@@ -103,7 +95,6 @@ if ($export.Count -gt 0) {
     $export | Export-Csv -Path $path -NoTypeInformation
     Write-Host "`nExported to: $path" -ForegroundColor Green
 }
-
 # Export users whose preferred MFA method is explicitly SMS or Voice.
 $smsVoiceMethods = @('sms', 'voiceMobile', 'voiceAlternateMobile', 'voiceOffice')
 try {
@@ -128,7 +119,6 @@ try {
             }
         }
     }
-
     $userExportPath = Join-Path $PSScriptRoot "SmsVoiceAuthenticationMethodUsers_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
     @($smsVoiceUsers) | Export-Csv -Path $userExportPath -NoTypeInformation
     Write-Host "`nSMS/Voice user report: $(@($smsVoiceUsers).Count) users with SMS/Voice as a preferred or system-preferred MFA method." -ForegroundColor Yellow
@@ -137,12 +127,10 @@ try {
     Write-Host "`nSMS/Voice user report unavailable: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-Host "The policy summary and policy-target CSV above are still valid. The user report requires AuditLog.Read.All and a supported Entra reporting role." -ForegroundColor Yellow
 }
-
 # Impact summary
 function Test-ScopeHasTargets($Scope) {
     return ($null -ne $Scope -and ($Scope.IsAllUsers -or $Scope.IncludedGroups.Count -gt 0 -or $Scope.IncludedUsers.Count -gt 0))
 }
-
 $hasTargets = (Test-ScopeHasTargets $smsScope) -or (Test-ScopeHasTargets $voiceScope)
 $migrationComplete = $migrationState -eq 'migrationComplete'
 $policyStatesKnown = $smsPolicy.State -in @('enabled', 'disabled') -and $voicePolicy.State -in @('enabled', 'disabled')
