@@ -23,6 +23,18 @@ Checks your Entra ID tenant's SMS and Voice authentication method policy scope a
 
 ## Prerequisites
 
+### PowerShell 7 (recommended)
+
+The Microsoft Graph PowerShell SDK is most reliable in PowerShell 7. Install it if needed:
+
+```powershell
+winget install --id Microsoft.PowerShell --source winget
+```
+
+Open a PowerShell 7 terminal (`pwsh`) before installing the Graph modules and running the scanner. Recent Graph SDK versions can fail to import in Windows PowerShell 5.1 with a `GetTokenAsync` error.
+
+### Microsoft Graph modules
+
 ```powershell
 Install-Module Microsoft.Graph.Authentication -Scope CurrentUser
 Install-Module Microsoft.Graph.Identity.SignIns -Scope CurrentUser
